@@ -6,13 +6,13 @@ defmodule ArcTest.Ecto.Definition do
     def url(_, :signed, _), do: "fallback?a=1&b=2"
     def store({file, _}), do: {:ok, file}
     def delete(_), do: :ok
-    defoverridable [delete: 1, url: 3]
+    defoverridable delete: 1, url: 3
     use Arc.Ecto.Definition
   end
 
   test "defines Definition.Type module" do
-    assert {:file, :in_memory} == :code.is_loaded(DummyDefinition.Type)
-    assert DummyDefinition.Type.type == Arc.Ecto.Type.type
+    assert {:file, []} == :code.is_loaded(DummyDefinition.Type)
+    assert DummyDefinition.Type.type() == Arc.Ecto.Type.type()
   end
 
   test "falls back to pre-defined url" do
@@ -20,14 +20,24 @@ defmodule ArcTest.Ecto.Definition do
   end
 
   test "url appends timestamp to url with no query parameters" do
-    updated_at = Ecto.DateTime.from_erl({{2015, 1, 1}, {1, 1, 1}})
-    url = DummyDefinition.url({%{file_name: "test.png", updated_at: updated_at}, :scope}, :original, [])
+    updated_at = NaiveDateTime.from_erl!({{2015, 1, 1}, {1, 1, 1}})
+
+    url =
+      DummyDefinition.url(
+        {%{file_name: "test.png", updated_at: updated_at}, :scope},
+        :original,
+        []
+      )
+
     assert url == "fallback?v=63587293261"
   end
 
   test "url appends timestamp to url with query parameters" do
-    updated_at = Ecto.DateTime.from_erl({{2015, 1, 1}, {1, 1, 1}})
-    url = DummyDefinition.url({%{file_name: "test.png", updated_at: updated_at}, :scope}, :signed, [])
+    updated_at = NaiveDateTime.from_erl!({{2015, 1, 1}, {1, 1, 1}})
+
+    url =
+      DummyDefinition.url({%{file_name: "test.png", updated_at: updated_at}, :scope}, :signed, [])
+
     assert url == "fallback?a=1&b=2&v=63587293261"
   end
 

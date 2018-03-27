@@ -19,22 +19,22 @@ defmodule ArcTest.Ecto.Schema do
 
     def changeset(user, params \\ :invalid) do
       user
-      |> cast(params, ~w(first_name)a)
-      |> cast_attachments(params, ~w(avatar)a)
+      |> cast(params, ~w(first_name avatar)a)
       |> validate_required(:avatar)
+      |> handle_uploads(params, [{:avatar, DummyDefinition}])
     end
 
     def path_changeset(user, params \\ :invalid) do
       user
-      |> cast(params, ~w(first_name)a)
-      |> cast_attachments(params, ~w(avatar)a, allow_paths: true)
+      |> cast(params, ~w(first_name avatar)a)
       |> validate_required(:avatar)
+      |> handle_uploads(params, [{:avatar, DummyDefinition}], allow_paths: true)
     end
 
     def changeset2(user, params \\ :invalid) do
       user
-      |> cast(params, ~w(first_name)a)
-      |> cast_attachments(params, ~w(avatar)a)
+      |> cast(params, ~w(first_name avatar)a)
+      |> handle_uploads(params, [{:avatar, DummyDefinition}])
     end
   end
 
@@ -69,30 +69,14 @@ defmodule ArcTest.Ecto.Schema do
     %{file_name: "file.png", updated_at: _} = cs.changes.avatar
   end
 
-  test_with_mock "cascades storage error into an error", DummyDefinition,
-    store: fn {%{__struct__: Plug.Upload, path: "/path/to/my/file.png", file_name: "file.png"},
-               %TestUser{}} ->
-      {:error, :invalid_file}
-    end do
-    upload = build_upload("/path/to/my/file.png")
-    cs = TestUser.changeset(%TestUser{}, %{"avatar" => upload})
-    assert called(DummyDefinition.store({upload, %TestUser{}}))
-    assert cs.valid? == false
-
-    assert cs.errors == [
-             avatar:
-               {"is invalid", [type: ArcTest.Ecto.Schema.DummyDefinition.Type, validation: :cast]}
-           ]
-  end
-
   test_with_mock "converts changeset into schema", DummyDefinition,
     store: fn {%{__struct__: Plug.Upload, path: "/path/to/my/file.png", file_name: "file.png"},
                %TestUser{}} ->
       {:error, :invalid_file}
     end do
     upload = build_upload("/path/to/my/file.png")
-    TestUser.changeset(%TestUser{}, %{"avatar" => upload})
-    assert called(DummyDefinition.store({upload, %TestUser{}}))
+
+    assert TestUser.changeset(%TestUser{}, %{"avatar" => upload}).valid?
   end
 
   test_with_mock "applies changes to schema", DummyDefinition,
@@ -101,8 +85,7 @@ defmodule ArcTest.Ecto.Schema do
       {:error, :invalid_file}
     end do
     upload = build_upload("/path/to/my/file.png")
-    TestUser.changeset(%TestUser{}, %{"avatar" => upload, "first_name" => "test"})
-    assert called(DummyDefinition.store({upload, %TestUser{first_name: "test"}}))
+    assert TestUser.changeset(%TestUser{}, %{"avatar" => upload, "first_name" => "test"}).valid?
   end
 
   test_with_mock "converts atom keys", DummyDefinition,
@@ -111,8 +94,7 @@ defmodule ArcTest.Ecto.Schema do
       {:error, :invalid_file}
     end do
     upload = build_upload("/path/to/my/file.png")
-    TestUser.changeset(%TestUser{}, %{avatar: upload})
-    assert called(DummyDefinition.store({upload, %TestUser{}}))
+    assert TestUser.changeset(%TestUser{}, %{avatar: upload}).valid?
   end
 
   test_with_mock "casting nil attachments", DummyDefinition,
@@ -130,6 +112,7 @@ defmodule ArcTest.Ecto.Schema do
   test_with_mock "allow_paths => true", DummyDefinition,
     store: fn {"/path/to/my/file.png", %TestUser{}} -> {:ok, "file.png"} end do
     changeset = TestUser.path_changeset(%TestUser{}, %{"avatar" => "/path/to/my/file.png"})
-    assert called(DummyDefinition.store({"/path/to/my/file.png", %TestUser{}}))
+
+    assert changeset.valid?
   end
 end

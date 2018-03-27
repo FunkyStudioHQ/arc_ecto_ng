@@ -8,6 +8,14 @@ defmodule Arc.Ecto.Type do
     {:ok, %{file_name: file, updated_at: updated_at}}
   end
 
+  def cast(_definition, %{file_name: file, path: path}) do
+    {:ok, %{file_name: file, path: path, updated_at: Ecto.DateTime.utc()}}
+  end
+
+  def cast(_definition, path) when is_binary(path) do
+    {:ok, path}
+  end
+
   def load(_definition, value) do
     {file_name, gsec} =
       case Regex.match?(@filename_with_timestamp, value) do

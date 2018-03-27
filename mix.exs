@@ -25,15 +25,15 @@ defmodule Arc.Ecto.Mixfile do
 
   defp description do
     """
-    An integration with Arc and Ecto.
+    Another integration for Arc and Ecto.
     """
   end
 
   defp package do
     [
-      maintainers: ["Sean Stavropoulos"],
+      maintainers: ["Andrea Pavoni"],
       licenses: ["Apache 2.0"],
-      links: %{"GitHub" => "https://github.com/stavro/arc_ecto"},
+      links: %{"GitHub" => "https://github.com/FunkyStudioHQ/arc_ecto_ng"},
       files: ~w(mix.exs README.md lib)
     ]
   end
