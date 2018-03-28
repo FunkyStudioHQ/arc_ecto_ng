@@ -4,12 +4,16 @@ defmodule Arc.Ecto.Type do
   @filename_with_timestamp ~r{^(.*)\?(\d+)$}
 
   # Support embeds_one/embeds_many
-  def cast(_definition, %{"file_name" => file, "updated_at" => updated_at}) do
-    {:ok, %{file_name: file, updated_at: updated_at}}
-  end
+  # def cast(_definition, %{"file_name" => file, "updated_at" => updated_at}) do
+  #   {:ok, %{file_name: file, updated_at: updated_at}}
+  # end
 
   def cast(_definition, %{file_name: file, path: path}) do
-    {:ok, %{file_name: file, path: path, updated_at: Ecto.DateTime.utc()}}
+    {:ok, %{file_name: file, path: path, updated_at: NaiveDateTime.utc_now()}}
+  end
+
+  def cast(_definition, %{filename: file, path: path}) do
+    {:ok, %{file_name: file, path: path, updated_at: NaiveDateTime.utc_now()}}
   end
 
   def cast(_definition, path) when is_binary(path) do
@@ -42,12 +46,22 @@ defmodule Arc.Ecto.Type do
     {:ok, %{file_name: file_name, updated_at: updated_at}}
   end
 
+  def dump(_definition, file_name) when is_binary(file_name) do
+    {:ok, file_name}
+  end
+
   def dump(_definition, %{file_name: file_name, updated_at: nil}) do
     {:ok, file_name}
   end
 
   def dump(_definition, %{file_name: file_name, updated_at: updated_at}) do
-    gsec = :calendar.datetime_to_gregorian_seconds(NaiveDateTime.to_erl(updated_at))
+    gsec = gregorian_seconds(updated_at)
     {:ok, "#{file_name}?#{gsec}"}
+  end
+
+  defp gregorian_seconds(datetime \\ NaiveDateTime.utc_now()) do
+    datetime
+    |> NaiveDateTime.to_erl()
+    |> :calendar.datetime_to_gregorian_seconds()
   end
 end

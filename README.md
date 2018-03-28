@@ -148,11 +148,15 @@ Both public and signed urls will include the timestamp for cache busting, and ar
 ```
 
 ## TODO
-
+* refactor tests: remove mocks, add more real cases, fix warnings
 * integrate [some interesting PRs](https://github.com/stavro/arc_ecto/pulls) from the original repository
 * implement business logic to handle uploaded files during update or delete
 * maybe choose a better name for this package
 * publish the package on [hex.pm](https://hex.pm)
+
+## Credits
+
+[Stavro](https://github.com/stavro), author of [Arc.Ecto](https://github.com/stavro/arc_ecto).
 
 ## License
 

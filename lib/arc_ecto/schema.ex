@@ -10,7 +10,7 @@ defmodule Arc.Ecto.Schema do
   def handle_attachments(changeset, params, allowed, options \\ []) do
     Changeset.prepare_changes(changeset, fn changeset ->
       changeset
-      |> cast_uploads(params, allowed, options)
+      |> cast_attachments(params, allowed, options)
       |> perform_uploads(allowed)
     end)
   end
@@ -23,26 +23,20 @@ defmodule Arc.Ecto.Schema do
   end
 
   defp perform_upload(changeset, definition, field) do
-    with {:ok, file} when not is_nil(file) <- validate_upload(changeset, definition, field),
-         {:ok, uploaded_file} <- definition.store(file) do
+    with {:ok, file} when not is_nil(file) <- validate_attachment(changeset, definition, field),
+         {:ok, uploaded_file} <- store_attachment(changeset, definition, file) do
       Changeset.put_change(changeset, field, uploaded_file)
     else
       nil ->
         changeset
 
       {:error, reason} ->
-        changeset.repo.rollback(reason)
-        Changeset.add_error(changeset, field, reason)
+        changeset = Changeset.add_error(changeset, field, reason)
+        changeset.repo.rollback(changeset)
     end
   end
 
-  defp cast_uploads(changeset, params, allowed, options) do
-    scope =
-      case changeset do
-        %Changeset{} -> Changeset.apply_changes(changeset)
-        %{__meta__: _} -> changeset
-      end
-
+  defp cast_attachments(changeset, params, allowed, options) do
     arc_allowed =
       Enum.map(allowed, fn {key, _definition} ->
         case key do
@@ -66,27 +60,29 @@ defmodule Arc.Ecto.Schema do
               [{field, nil} | fields]
 
             # Allow casting Plug.Uploads
-            {field, upload = %{__struct__: Plug.Upload}}, fields ->
-              [{field, {upload, scope}} | fields]
+            {field, file = %{__struct__: Plug.Upload}}, fields ->
+              [{field, file} | fields]
 
             # If casting a binary (path), ensure we've explicitly allowed paths
             {field, path}, fields when is_binary(path) ->
               if Keyword.get(options, :allow_paths, false) do
-                [{field, {path, scope}} | fields]
+                [{field, path} | fields]
               else
                 fields
               end
           end)
-          |> Enum.to(%{})
+          |> Enum.into(%{})
       end
 
     Changeset.cast(changeset, arc_params, arc_allowed)
   end
 
-  defp validate_upload(changeset, definition, field) do
+  defp validate_attachment(changeset, definition, field) do
+    file_field = Changeset.get_field(changeset, field)
+
     file =
-      Changeset.get_field(changeset, field)
-      |> Arc.File.new()
+      file_field
+      |> Map.put(:filename, file_field.file_name)
 
     valid_upload = definition.validate({file, :ok})
 
@@ -115,5 +111,15 @@ defmodule Arc.Ecto.Schema do
       {key, value}, acc when is_atom(key) ->
         Map.put(acc || %{}, Atom.to_string(key), value)
     end) || params
+  end
+
+  defp store_attachment(changeset, definition, file) do
+    scope =
+      case changeset do
+        %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(changeset)
+        %{__meta__: _} -> changeset
+      end
+
+    definition.store({file, scope})
   end
 end
