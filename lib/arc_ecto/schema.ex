@@ -2,7 +2,7 @@ defmodule Arc.Ecto.Schema do
   defmacro __using__(_) do
     quote do
       # import Arc.Ecto.Schema
-      def handle_uploads(changeset, params, allowed, options \\ []) do
+      def handle_attachments(changeset, params, allowed, options \\ []) do
         Ecto.Changeset.prepare_changes(changeset, fn changeset ->
           changeset
           |> cast_uploads(params, allowed, options)

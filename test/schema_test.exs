@@ -21,20 +21,20 @@ defmodule ArcTest.Ecto.Schema do
       user
       |> cast(params, ~w(first_name avatar)a)
       |> validate_required(:avatar)
-      |> handle_uploads(params, [{:avatar, DummyDefinition}])
+      |> handle_attachments(params, [{:avatar, DummyDefinition}])
     end
 
     def path_changeset(user, params \\ :invalid) do
       user
       |> cast(params, ~w(first_name avatar)a)
       |> validate_required(:avatar)
-      |> handle_uploads(params, [{:avatar, DummyDefinition}], allow_paths: true)
+      |> handle_attachments(params, [{:avatar, DummyDefinition}], allow_paths: true)
     end
 
     def changeset2(user, params \\ :invalid) do
       user
       |> cast(params, ~w(first_name avatar)a)
-      |> handle_uploads(params, [{:avatar, DummyDefinition}])
+      |> handle_attachments(params, [{:avatar, DummyDefinition}])
     end
   end
 

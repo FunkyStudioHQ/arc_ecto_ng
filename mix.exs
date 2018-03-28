@@ -1,11 +1,11 @@
 defmodule Arc.Ecto.Mixfile do
   use Mix.Project
 
-  @version "0.8.0"
+  @version "0.2.0"
 
   def project do
     [
-      app: :arc_ecto,
+      app: :arc_ecto_ng,
       version: @version,
       elixir: "~> 1.5",
       deps: deps(),
