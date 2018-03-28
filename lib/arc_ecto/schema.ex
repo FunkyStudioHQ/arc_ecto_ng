@@ -18,8 +18,8 @@ defmodule Arc.Ecto.Schema do
       end
 
       defp perform_upload(changeset, definition, field) do
-        with file when not is_nil(file) <- Changeset.get_field(changeset, field),
-             {:ok, uploaded_file} <- {:ok, path} = definition.store(file) do
+        with {:ok, file} when not is_nil(file) <- validate_upload(changeset, definition, field),
+             {:ok, uploaded_file} <- definition.store(file) do
           Ecto.Changeset.put_change(changeset, field, uploaded_file)
         else
           nil ->
@@ -76,6 +76,25 @@ defmodule Arc.Ecto.Schema do
           end
 
         cast(changeset, arc_params, arc_allowed)
+      end
+
+      defp validate_upload(changeset, definition, field) do
+        file =
+          Changeset.get_field(changeset, field)
+          |> Arc.File.new()
+
+        valid_upload = definition.validate({file, :ok})
+
+        case {changeset, valid_upload} do
+          {%Ecto.Changeset{valid?: true}, true} ->
+            {:ok, file}
+
+          {%Ecto.Changeset{valid?: true}, false} ->
+            {:error, "invalid attachment"}
+
+          _ ->
+            nil
+        end
       end
 
       defp convert_params_to_binary(params) do
