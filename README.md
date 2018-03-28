@@ -1,17 +1,26 @@
-Arc.Ecto
-========
+# Arc.Ecto NG
 
-Arc.Ecto provides an integration with [Arc](https://github.com/stavro/arc) and Ecto.
+This is a fork from the original [arc_ecto](https://github.com/stavro/arc_ecto),
+it provides an integration with [Arc](https://github.com/stavro/arc) and Ecto.
 
-Installation
-============
+There are several reasons for this fork:
 
-Add the latest stable release to your `mix.exs` file:
+* changing the logic for correctly uploading a file. In the original implementation,
+the upload happens during the `cast`ing of parameters, without checking if the
+data will effectively being saved on database. So we better approach by uploading
+the file during the database transaction. If for some reason the upload or database
+write fails, everything is rollback-ed
+* strong need for a _mantained package_, unfortunately `Arc.Ecto` wasn't integrating
+PRs for more than a year
+
+## Installation
+
+Add the github repository to your `mix.exs` file (we'll publish a package soon):
 
 ```elixir
 defp deps do
   [
-    {:arc_ecto, "~> 0.7.0"}
+    {:arc_ecto, git: "https://github.com/FunkyStudioHQ/arc_ecto_ng.git"}
   ]
 end
 
@@ -22,8 +31,7 @@ end
 
 Then run `mix deps.get` in your shell to fetch the dependencies.
 
-Usage
-=====
+## Usage
 
 ### Add Arc.Ecto.Definition
 
@@ -64,6 +72,8 @@ defmodule MyApp.User do
   use MyApp.Web, :model
   use Arc.Ecto.Schema
 
+  alias MyApp.Avatar
+
   schema "users" do
     field :name,   :string
     field :avatar, MyApp.Avatar.Type
@@ -78,8 +88,8 @@ defmodule MyApp.User do
   def changeset(user, params \\ :invalid) do
     user
     |> cast(params, [:name])
-    |> cast_attachments(params, [:avatar])
     |> validate_required([:name, :avatar])
+    |> handle_attachments(params, [{:avatar, Avatar}])
   end
 end
 ```
@@ -137,9 +147,16 @@ Both public and signed urls will include the timestamp for cache busting, and ar
   MyApp.Avatar.url({user.avatar, user}, :thumb, signed: true)
 ```
 
+## TODO
+
+* integrate [some interesting PRs](https://github.com/stavro/arc_ecto/pulls) from the original repository
+* implement business logic to handle uploaded files during update or delete
+* maybe choose a better name for this package
+* publish the package on [hex.pm](https://hex.pm)
+
 ## License
 
-Copyright 2015 Sean Stavropoulos
+Copyright 2018 http://funky.studio
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
