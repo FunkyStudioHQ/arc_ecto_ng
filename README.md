@@ -20,7 +20,7 @@ Add the github repository to your `mix.exs` file (we'll publish a package soon):
 ```elixir
 defp deps do
   [
-    {:arc_ecto, git: "https://github.com/FunkyStudioHQ/arc_ecto_ng.git"}
+    {:arc_ecto_ng, git: "https://github.com/FunkyStudioHQ/arc_ecto_ng.git"}
   ]
 end
 
