@@ -30,8 +30,12 @@ defmodule Arc.Ecto.Schema do
       nil ->
         changeset
 
-      {:error, reason} ->
-        changeset = Changeset.add_error(changeset, field, reason)
+      {:error, %Changeset{}} ->
+        changeset = Changeset.add_error(changeset, field, inspect(changeset.errors))
+        changeset.repo.rollback(changeset)
+
+      {:error, error} ->
+        changeset = Changeset.add_error(changeset, field, inspect(error))
         changeset.repo.rollback(changeset)
     end
   end
