@@ -1,13 +1,13 @@
 defmodule Arc.Ecto.Mixfile do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.3.0"
 
   def project do
     [
       app: :arc_ecto_ng,
       version: @version,
-      elixir: "~> 1.5",
+      elixir: "~> 1.11",
       deps: deps(),
 
       # Hex
@@ -50,7 +50,7 @@ defmodule Arc.Ecto.Mixfile do
   defp deps do
     [
       {:arc, "~> 0.11"},
-      {:ecto, "~> 2.1"},
+      {:ecto_sql, "~> 3.0"},
       {:mock, "~> 0.3.1", only: :test},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
