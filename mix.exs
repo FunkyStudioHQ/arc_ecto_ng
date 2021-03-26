@@ -49,9 +49,9 @@ defmodule Arc.Ecto.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:arc, "~> 0.11.0"},
-      {:ecto_sql, "~> 3.4.4"},
-      {:mock, "~> 0.3.1", only: :test},
+      {:arc, "~> 0.11"},
+      {:ecto_sql, "~> 3.4"},
+      {:mock, "~> 0.3", only: :test},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
