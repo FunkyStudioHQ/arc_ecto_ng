@@ -9,6 +9,8 @@ defmodule Arc.Ecto.Definition do
         def cast(value), do: Arc.Ecto.Type.cast(unquote(definition), value)
         def load(value), do: Arc.Ecto.Type.load(unquote(definition), value)
         def dump(value), do: Arc.Ecto.Type.dump(unquote(definition), value)
+        def embed_as(value), do: Arc.Ecto.Type.embed_as(unquote(definition), value)
+        def equal?(value1, value2), do: Arc.Ecto.Type.equal?(unquote(definition), value1, value2)
       end
 
       def url({%{file_name: file_name, updated_at: updated_at}, scope}, version, options) do

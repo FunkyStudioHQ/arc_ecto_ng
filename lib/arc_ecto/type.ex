@@ -59,6 +59,12 @@ defmodule Arc.Ecto.Type do
     {:ok, "#{file_name}?#{gsec}"}
   end
 
+  def embed_as(_definition, _value), do: :dump
+
+  def equal?(_definition, value1, value2) do
+    value1 == value2
+  end
+
   defp gregorian_seconds(datetime \\ NaiveDateTime.utc_now()) do
     datetime
     |> NaiveDateTime.to_erl()
