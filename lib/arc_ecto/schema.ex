@@ -78,7 +78,7 @@ defmodule Arc.Ecto.Schema do
           |> Enum.into(%{})
       end
 
-    Changeset.cast(changeset, arc_params, arc_allowed)
+    Changeset.cast(changeset, arc_params, Enum.map(arc_allowed, &String.to_existing_atom/1))
   end
 
   defp validate_attachment(changeset, definition, field) do
@@ -103,6 +103,7 @@ defmodule Arc.Ecto.Schema do
   end
 
   defp convert_params_to_binary(params) do
+    IO.inspect(params, label: "parametrrrrrrrr------>")
     Enum.reduce(params, nil, fn
       {key, _value}, nil when is_binary(key) ->
         nil
@@ -113,6 +114,7 @@ defmodule Arc.Ecto.Schema do
                 "got a map with mixed keys: #{inspect(params)}"
 
       {key, value}, acc when is_atom(key) ->
+        IO.puts "SONO QUI #####################"
         Map.put(acc || %{}, Atom.to_string(key), value)
     end) || params
   end
